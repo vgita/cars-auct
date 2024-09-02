@@ -10,9 +10,16 @@ public class AuctionsController(AuctionDbContext context, IMapper mapper)
     [HttpGet]
     public async Task<ActionResult<List<AuctionDto>>> GetAllAuctions(string? date)
     {
-        var auctions = await context.Auctions.Include(a => a.Item)
-           .OrderBy(a => a.Item.Make)
-           .ToListAsync();
+        var query = context.Auctions
+            .Include(a => a.Item)
+            .OrderBy(x => x.Item.Make).AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(date))
+        {
+            query = query.Where(q => q.UpdatedAt.CompareTo(DateTime.Parse(date).ToUniversalTime()) > 0);
+        }
+
+        var auctions = await query.ToListAsync();
 
         return mapper.Map<List<AuctionDto>>(auctions);
     }
