@@ -1,10 +1,11 @@
+using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuctionService.Controllers;
 
 [ApiController]
 [Route("api/auctions")]
-public class AuctionsController(AuctionDbContext context, IMapper mapper)
+public class AuctionsController(AuctionDbContext context, IMapper mapper, IPublishEndpoint publishEndpoint)
     : ControllerBase
 {
     [HttpGet]
@@ -54,7 +55,10 @@ public class AuctionsController(AuctionDbContext context, IMapper mapper)
             return BadRequest("Could not save changes tot the DB");
         }
 
-        return CreatedAtAction(nameof(GetAuctionById), new { id = auction.Id }, mapper.Map<AuctionDto>(auction));
+        var newAuction = mapper.Map<AuctionDto>(auction);
+        await publishEndpoint.Publish(mapper.Map<AuctionCreated>(newAuction));
+
+        return CreatedAtAction(nameof(GetAuctionById), new { id = auction.Id }, newAuction);
     }
 
     [HttpPut("{id}")]
