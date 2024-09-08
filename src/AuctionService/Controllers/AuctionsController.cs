@@ -48,15 +48,16 @@ public class AuctionsController(AuctionDbContext context, IMapper mapper, IPubli
         auction.Seller = "test";
 
         context.Auctions.Add(auction);
+
+        var newAuction = mapper.Map<AuctionDto>(auction);
+        await publishEndpoint.Publish(mapper.Map<AuctionCreated>(newAuction)); //will create a new message in the outbox and be handled in the same transaction
+
         var result = await context.SaveChangesAsync() > 0;
 
         if (!result)
         {
             return BadRequest("Could not save changes tot the DB");
         }
-
-        var newAuction = mapper.Map<AuctionDto>(auction);
-        await publishEndpoint.Publish(mapper.Map<AuctionCreated>(newAuction));
 
         return CreatedAtAction(nameof(GetAuctionById), new { id = auction.Id }, newAuction);
     }
