@@ -1,4 +1,3 @@
-using Duende.IdentityServer;
 using IdentityService.Data;
 using IdentityService.Models;
 using Microsoft.AspNetCore.Identity;
@@ -14,7 +13,7 @@ internal static class HostingExtensions
         builder.Services.AddRazorPages();
 
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
         builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -35,26 +34,21 @@ internal static class HostingExtensions
             .AddInMemoryApiScopes(Config.ApiScopes)
             .AddInMemoryClients(Config.Clients)
             .AddAspNetIdentity<ApplicationUser>();
-        
-        builder.Services.AddAuthentication()
-            .AddGoogle(options =>
-            {
-                options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
 
-                // register your IdentityServer with Google at https://console.developers.google.com
-                // enable the Google+ API
-                // set the redirect URI to https://localhost:5001/signin-google
-                options.ClientId = "copy client ID from Google here";
-                options.ClientSecret = "copy client secret from Google here";
-            });
+        builder.Services.ConfigureApplicationCookie(options =>
+        {
+            options.Cookie.SameSite = SameSiteMode.Lax; //for running over http
+        });
+
+        builder.Services.AddAuthentication();
 
         return builder.Build();
     }
-    
+
     public static WebApplication ConfigurePipeline(this WebApplication app)
-    { 
+    {
         app.UseSerilogRequestLogging();
-    
+
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
@@ -64,7 +58,7 @@ internal static class HostingExtensions
         app.UseRouting();
         app.UseIdentityServer();
         app.UseAuthorization();
-        
+
         app.MapRazorPages()
             .RequireAuthorization();
 
