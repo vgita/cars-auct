@@ -80,6 +80,8 @@ public class AuctionsController(AuctionDbContext context, IMapper mapper, IPubli
         auction.Item.Mileage = dto.Mileage ?? auction.Item.Mileage;
         auction.Item.Year = dto.Year ?? auction.Item.Year;
 
+        await publishEndpoint.Publish(mapper.Map<AuctionUpdated>(auction)); //will create a new message in the outbox and be handled in the same transaction
+
         var result = await context.SaveChangesAsync() > 0;
 
         if (!result)
@@ -102,6 +104,9 @@ public class AuctionsController(AuctionDbContext context, IMapper mapper, IPubli
         }
 
         context.Auctions.Remove(auction);
+
+        await publishEndpoint.Publish<AuctionDeleted>(new { Id = auction.Id.ToString() }); //will create a new message in the outbox and be handled in the same transaction
+
         var result = await context.SaveChangesAsync() > 0;
 
         if (!result)
