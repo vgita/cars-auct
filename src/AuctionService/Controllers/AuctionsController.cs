@@ -1,4 +1,5 @@
 using MassTransit;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuctionService.Controllers;
@@ -40,12 +41,13 @@ public class AuctionsController(AuctionDbContext context, IMapper mapper, IPubli
         return mapper.Map<AuctionDto>(auction);
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<AuctionDto>> CreateAuction(CreateAuctionDto dto)
     {
         var auction = mapper.Map<Auction>(dto);
 
-        auction.Seller = "test";
+        auction.Seller = User.Identity?.Name ?? "unknown";
 
         context.Auctions.Add(auction);
 
@@ -62,6 +64,7 @@ public class AuctionsController(AuctionDbContext context, IMapper mapper, IPubli
         return CreatedAtAction(nameof(GetAuctionById), new { id = auction.Id }, newAuction);
     }
 
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<ActionResult<AuctionDto>> UpdateAuction(Guid id, UpdateAuctionDto dto)
     {
@@ -72,6 +75,11 @@ public class AuctionsController(AuctionDbContext context, IMapper mapper, IPubli
         if (auction is null)
         {
             return NotFound();
+        }
+
+        if (auction.Seller != User.Identity?.Name)
+        {
+            return Forbid();
         }
 
         auction.Item.Make = dto.Make ?? auction.Item.Make;
@@ -92,6 +100,7 @@ public class AuctionsController(AuctionDbContext context, IMapper mapper, IPubli
         return Ok(mapper.Map<AuctionDto>(auction));
     }
 
+    [Authorize]
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAuction(Guid id)
     {
@@ -101,6 +110,11 @@ public class AuctionsController(AuctionDbContext context, IMapper mapper, IPubli
         if (auction is null)
         {
             return NotFound();
+        }
+
+        if (auction.Seller != User.Identity?.Name)
+        {
+            return Forbid();
         }
 
         context.Auctions.Remove(auction);
