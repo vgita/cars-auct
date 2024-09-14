@@ -1,6 +1,3 @@
-using Contracts;
-using MassTransit;
-
 namespace SearchService.Consumers;
 
 public class AuctionDeletedConsumer : IConsumer<AuctionDeleted>

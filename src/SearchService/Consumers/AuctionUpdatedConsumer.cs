@@ -1,7 +1,3 @@
-using AutoMapper;
-using Contracts;
-using MassTransit;
-
 namespace SearchService.Consumers;
 
 public class AuctionUpdatedConsumer(IMapper mapper) : IConsumer<AuctionUpdated>

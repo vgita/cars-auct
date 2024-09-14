@@ -1,5 +1,3 @@
-using MassTransit;
-
 namespace AuctionService.Consumers;
 
 public class AuctionCreatedFaultConsumer : IConsumer<Fault<AuctionCreated>>
