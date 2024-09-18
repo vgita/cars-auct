@@ -1,12 +1,14 @@
-import Image from 'next/image';
+import { Auction } from '@/types';
+import CarImage from './CarImage';
+import CountdownTimer from './CountdownTimer';
 
 type Props = {
-	auction: any;
+	auction: Auction;
 };
 
 export default function AuctionCard({ auction }: Props) {
 	return (
-		<a href="#">
+		<a href="#" className="group">
 			<div
 				className="
         relative
@@ -16,14 +18,15 @@ export default function AuctionCard({ auction }: Props) {
         rounded-lg
         overflow-hidden"
 			>
-				<Image
-					src={auction.imageUrl}
-					alt={`Image of ${auction.make} ${auction.model} in ${auction.color}`}
-					fill
-					priority
-					className="object-cover"
-					sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+				<CarImage
+					imageUrl={auction.imageUrl}
+					make={auction.make}
+					model={auction.model}
+					color={auction.color}
 				/>
+				<div className="absolute bottom-2 left-2">
+					<CountdownTimer auctionEnd={auction.auctionEnd} />
+				</div>
 			</div>
 			<div
 				className="
