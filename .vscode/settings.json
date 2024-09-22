@@ -4,8 +4,10 @@
 		"Carsties",
 		"flowbite",
 		"Npgsql",
+		"OIDC",
 		"Pkce",
 		"Serilog",
+		"signin",
 		"tailwindcss",
 		"zustand"
 	]

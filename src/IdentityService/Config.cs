@@ -4,20 +4,20 @@ namespace IdentityService;
 
 public static class Config
 {
-    public static IEnumerable<IdentityResource> IdentityResources =>
-        [
-            new IdentityResources.OpenId(),
+  public static IEnumerable<IdentityResource> IdentityResources =>
+      [
+          new IdentityResources.OpenId(),
             new IdentityResources.Profile(),
         ];
 
-    public static IEnumerable<ApiScope> ApiScopes =>
-        [
-            new ApiScope("auctionApp", "Auction app full access"),
+  public static IEnumerable<ApiScope> ApiScopes =>
+      [
+          new ApiScope("auctionApp", "Auction app full access"),
         ];
 
-    public static IEnumerable<Client> Clients =>
-        [
-          new Client {
+  public static IEnumerable<Client> Clients =>
+      [
+        new Client {
             ClientId = "postman",
             ClientName = "postman",
             AllowedScopes = {"openid", "profile", "auctionApp"},
@@ -35,6 +35,7 @@ public static class Config
             AllowOfflineAccess = true,
             AllowedScopes = { "openid", "profile", "auctionApp" },
             AccessTokenLifetime = 3600 * 24 * 30,
+            AlwaysIncludeUserClaimsInIdToken = true
           }
-        ];
+      ];
 }
