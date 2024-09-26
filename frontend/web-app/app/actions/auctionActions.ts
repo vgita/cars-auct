@@ -22,3 +22,15 @@ export async function updateAuctionTest() {
 export async function createAuction(data: FieldValues) {
 	return await fetchWrapper.post('auctions', data);
 }
+
+export async function getDetails(id: string): Promise<Auction> {
+	return await fetchWrapper.get(`auctions/${id}`);
+}
+
+export async function updateAuction(id: string, data: FieldValues) {
+	return await fetchWrapper.put(`auctions/${id}`, data);
+}
+
+export async function deleteAuction(id: string) {
+	return await fetchWrapper.del(`auctions/${id}`);
+}
