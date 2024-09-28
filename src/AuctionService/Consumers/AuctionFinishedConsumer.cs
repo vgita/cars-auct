@@ -6,7 +6,7 @@ public class AuctionFinishedConsumer(AuctionDbContext DbContext) : IConsumer<Auc
   {
     Console.WriteLine("--> Consuming Auction Finished event");
 
-    Auction? auction = await DbContext.Auctions.FindAsync(context.Message.AuctionId);
+    Auction? auction = await DbContext.Auctions.FindAsync(Guid.Parse(context.Message.AuctionId));
 
     if (auction is null)
     {

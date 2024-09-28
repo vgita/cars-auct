@@ -6,7 +6,7 @@ public class BidPlacedConsumer(AuctionDbContext DbContext) : IConsumer<BidPlaced
   {
     Console.WriteLine("--> Consuming BidPlaced event");
 
-    Auction? auction = await DbContext.Auctions.FindAsync(context.Message.AuctionId);
+    Auction? auction = await DbContext.Auctions.FindAsync(Guid.Parse(context.Message.AuctionId));
 
     if (auction is null)
     {
