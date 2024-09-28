@@ -5,7 +5,7 @@ namespace BiddingService.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class BidsController(IMapper mapper, IPublishEndpoint publishEndpoint) : ControllerBase
+public class BidsController(IMapper mapper, IPublishEndpoint publishEndpoint, GrpcAuctionClient grpcClient) : ControllerBase
 {
     [Authorize]
     [HttpPost]
@@ -15,7 +15,12 @@ public class BidsController(IMapper mapper, IPublishEndpoint publishEndpoint) : 
 
         if (auction is null)
         {
-            return BadRequest("Cannot accept bids on this auction at this time");
+            auction = grpcClient.GetAuction(auctionId);
+
+            if (auction is null)
+            {
+                return BadRequest("Cannot accept bids on this auction at this time");
+            }
         }
 
         if (auction.Seller == User.Identity?.Name)

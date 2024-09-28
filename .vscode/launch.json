@@ -45,6 +45,23 @@
 			}
 		},
 		{
+			"name": "Bidding Launch",
+			"type": "coreclr",
+			"request": "launch",
+			"preLaunchTask": "build",
+			"program": "${workspaceFolder}/src/BiddingService/bin/Debug/net8.0/BiddingService.dll",
+			"args": [],
+			"cwd": "${workspaceFolder}/src/BiddingService",
+			"stopAtEntry": false,
+			"serverReadyAction": {
+				"action": "openExternally",
+				"pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+			},
+			"env": {
+				"ASPNETCORE_ENVIRONMENT": "Development"
+			}
+		},
+		{
 			"name": "Docker .NET Launch",
 			"type": "docker",
 			"request": "launch",
