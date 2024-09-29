@@ -30,8 +30,6 @@ export default function BidItem({ bid }: Props) {
 				break;
 		}
 
-		console.log(bid.bidStatus, bgColor, text);
-
 		return { bgColor, text };
 	}
 	return (
