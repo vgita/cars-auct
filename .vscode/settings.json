@@ -8,6 +8,7 @@
 		"OIDC",
 		"Pkce",
 		"Serilog",
+		"signalr",
 		"signin",
 		"tailwindcss",
 		"zustand"
