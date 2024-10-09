@@ -1,4 +1,3 @@
-using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,32 +5,19 @@ namespace AuctionService.Controllers;
 
 [ApiController]
 [Route("api/auctions")]
-public class AuctionsController(AuctionDbContext context, IMapper mapper, IPublishEndpoint publishEndpoint)
+public class AuctionsController(IAuctionRepository repo, IMapper mapper, IPublishEndpoint publishEndpoint)
     : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<List<AuctionDto>>> GetAllAuctions(string? date)
     {
-        var query = context.Auctions
-            .Include(a => a.Item)
-            .OrderBy(x => x.Item.Make).AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(date))
-        {
-            query = query.Where(q => q.UpdatedAt.CompareTo(DateTime.Parse(date).ToUniversalTime()) > 0);
-        }
-
-        var auctions = await query.ToListAsync();
-
-        return mapper.Map<List<AuctionDto>>(auctions);
+        return await repo.GetAuctionsAsync(date);
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<AuctionDto>> GetAuctionById(Guid id)
     {
-        var auction = await context.Auctions
-            .Include(a => a.Item)
-            .FirstOrDefaultAsync(a => a.Id == id);
+        var auction = await repo.GetAuctionByIdAsync(id);
 
         if (auction is null)
         {
@@ -49,12 +35,12 @@ public class AuctionsController(AuctionDbContext context, IMapper mapper, IPubli
 
         auction.Seller = User.Identity?.Name ?? "unknown";
 
-        context.Auctions.Add(auction);
+        repo.AddAuction(auction);
 
         var newAuction = mapper.Map<AuctionDto>(auction);
         await publishEndpoint.Publish(mapper.Map<AuctionCreated>(newAuction)); //will create a new message in the outbox and be handled in the same transaction
 
-        var result = await context.SaveChangesAsync() > 0;
+        var result = await repo.SaveChangesAsync();
 
         if (!result)
         {
@@ -68,9 +54,7 @@ public class AuctionsController(AuctionDbContext context, IMapper mapper, IPubli
     [HttpPut("{id}")]
     public async Task<ActionResult<AuctionDto>> UpdateAuction(Guid id, UpdateAuctionDto dto)
     {
-        var auction = await context.Auctions
-            .Include(a => a.Item)
-            .FirstOrDefaultAsync(a => a.Id == id);
+        var auction = await repo.GetAuctionEntityByIdAsync(id);
 
         if (auction is null)
         {
@@ -90,7 +74,7 @@ public class AuctionsController(AuctionDbContext context, IMapper mapper, IPubli
 
         await publishEndpoint.Publish(mapper.Map<AuctionUpdated>(auction)); //will create a new message in the outbox and be handled in the same transaction
 
-        var result = await context.SaveChangesAsync() > 0;
+        var result = await repo.SaveChangesAsync();
 
         if (!result)
         {
@@ -104,8 +88,7 @@ public class AuctionsController(AuctionDbContext context, IMapper mapper, IPubli
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAuction(Guid id)
     {
-        var auction = await context.Auctions
-            .FirstOrDefaultAsync(a => a.Id == id);
+        var auction = await repo.GetAuctionEntityByIdAsync(id);
 
         if (auction is null)
         {
@@ -117,11 +100,11 @@ public class AuctionsController(AuctionDbContext context, IMapper mapper, IPubli
             return Forbid();
         }
 
-        context.Auctions.Remove(auction);
+        repo.RemoveAuction(auction);
 
         await publishEndpoint.Publish<AuctionDeleted>(new { Id = auction.Id.ToString() }); //will create a new message in the outbox and be handled in the same transaction
 
-        var result = await context.SaveChangesAsync() > 0;
+        var result = await repo.SaveChangesAsync();
 
         if (!result)
         {
