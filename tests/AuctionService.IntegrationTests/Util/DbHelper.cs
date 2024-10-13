@@ -1,5 +1,4 @@
-﻿
-namespace AuctionService.IntegrationTests.Util;
+﻿namespace AuctionService.IntegrationTests.Util;
 
 public static class DbHelper
 {
