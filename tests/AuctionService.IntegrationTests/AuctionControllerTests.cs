@@ -1,11 +1,8 @@
-using System.Net;
-using System.Net.Http.Json;
-using AuctionService.DTOs;
-
 namespace AuctionService.IntegrationTests;
 
-public class AuctionControllerTests : IClassFixture<CustomWebAppFactory>,
-IAsyncLifetime
+//public class AuctionControllerTests : IClassFixture<CustomWebAppFactory>, IAsyncLifetime
+[Collection("SharedCollection")]
+public class AuctionControllerTests : IAsyncLifetime
 {
   private readonly CustomWebAppFactory _factory;
   private readonly HttpClient _httpClient;
@@ -62,7 +59,7 @@ IAsyncLifetime
   [Fact]
   public async Task CreateAuction_WithAuth_ShouldReturn201()
   {
-    var auction = GetAuctionForCreate();
+    var auction = DataHelper.GetAuctionForCreate();
     _httpClient.SetFakeJwtBearerToken(AuthHelper.GetBearerForUser("bob"));
 
     var response = await _httpClient.PostAsJsonAsync($"api/auctions", auction);
@@ -76,7 +73,7 @@ IAsyncLifetime
   [Fact]
   public async Task CreateAuction_WithInvalidCreateAuctionDto_ShouldReturn400()
   {
-    var auction = GetAuctionForCreate();
+    var auction = DataHelper.GetAuctionForCreate();
     auction.Make = null!;
     _httpClient.SetFakeJwtBearerToken(AuthHelper.GetBearerForUser("bob"));
 
@@ -118,19 +115,5 @@ IAsyncLifetime
     var db = scope.ServiceProvider.GetRequiredService<AuctionDbContext>();
     DbHelper.ReInitDbForTests(db);
     return Task.CompletedTask;
-  }
-
-  private CreateAuctionDto GetAuctionForCreate()
-  {
-    return new CreateAuctionDto
-    {
-      Make = "test",
-      Model = "testModel",
-      ImageUrl = "test",
-      Color = "test",
-      Mileage = 10,
-      Year = 10,
-      ReservePrice = 10,
-    };
   }
 }
