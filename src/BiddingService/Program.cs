@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using MongoDB.Driver;
+using Polly;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,7 +38,12 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-await DB.InitAsync("BidDb", MongoClientSettings
-.FromConnectionString(builder.Configuration.GetConnectionString("MongoDbConnection")));
+await Policy.Handle<TimeoutException>()
+    .WaitAndRetryAsync(5, retryAttempts => TimeSpan.FromSeconds(10))
+    .ExecuteAndCaptureAsync(async () =>
+    {
+        await DB.InitAsync("BidDb", MongoClientSettings
+        .FromConnectionString(builder.Configuration.GetConnectionString("MongoDbConnection")));
+    });
 
 app.Run();
